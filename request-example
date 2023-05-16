@@ -1,0 +1,50 @@
+import requests
+import json
+from collections import Counter
+
+# 定义要搜索的关键词和要爬取的页数
+keyword = '明日方舟'
+page_count = 10
+
+# 定义一个字典来存储关键词和它们的出现次数
+keyword_count = {}
+
+# 循环爬取前 page_count 页的搜索结果
+for i in range(page_count):
+    try:
+        # 构造 API 请求 URL
+        url = 'https://www.baidu.com/sugrec?prod=pc&wd=' + keyword + '&p=' + str(i + 1)
+        print("正在爬取第", i + 1, "页：", url)
+        # 发送 GET 请求获取 API 响应
+        response = requests.get(url)
+        response.raise_for_status()
+        data = json.loads(response.text)
+
+        # 提取 API 响应中的搜索建议列表
+        if 'g' in data:
+            search_suggestions = data['g']
+        elif 's' in data:
+            search_suggestions = data['s']
+        else:
+            raise KeyError("未找到搜索建议列表")
+
+        # 循环处理每个搜索建议
+        for suggestion in search_suggestions:
+            # 提取搜索建议的关键词
+            keyword1 = suggestion['q']
+
+            # 统计关键词的出现次数
+            if keyword1 in keyword_count:
+                keyword_count[keyword1] += 1
+            else:
+                keyword_count[keyword1] = 1
+    except Exception as e:
+        print("爬取第", i + 1, "页出现异常:", e)
+
+# 使用 Counter 对关键词进行统计，获取出现次数最多的前 10 个关键词
+top_keywords = Counter(keyword_count).most_common(10)
+
+# 输出出现次数最多的前 10 个关键词
+print("出现次数最多的前 10 个关键词：")
+for keyword, count in top_keywords:
+    print(keyword, count)
