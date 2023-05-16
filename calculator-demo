@@ -1,0 +1,203 @@
+#为什么没有注释？为什么没有注释？为什么没有注释？为什么没有注释？为什么没有注释？
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import static java.lang.Math.*;
+import static java.sql.Types.NULL;
+
+public class Ep8{
+    public static void main(String[] args) {
+        Calculator calculator = new Calculator();
+    }
+
+    public static class Calculator {
+        private final JFrame frame;
+        private final JTextField textField;
+        private double num1;
+        private String operator;
+        public boolean JustUsedEqual=false;
+        public double justresult=0.0;
+        public int operatormethod=0;
+        double result = 0.0;
+        public static boolean ISINTEGER(double n){
+            double test = n;
+            int head = (int) test;
+            if (n % head == 0)
+                return true;
+            else
+                return false;
+        }
+        public Calculator() {
+            frame = new JFrame("Calculator DEMO");
+            JFrame.setDefaultLookAndFeelDecorated(true);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(400, 400);
+            frame.setLayout(new BorderLayout());
+            //Font font = new Font("Arial", Font.BOLD, 20);
+            textField = new JTextField();
+            textField.setHorizontalAlignment(JTextField.RIGHT);
+            textField.setFont(new Font("Agency FB",Font.BOLD,35));
+            frame.add(textField, BorderLayout.NORTH);
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setLayout(new GridLayout(5, 5));
+            String[] buttonLabels = {
+                    "AC","<]","sin","cos","tan",
+                    "7", "8", "9", "+","sqrt",
+                    "4", "5", "6", "-","log",
+                    "1", "2", "3", "×","ln",
+                    "0", ".", "=", "÷","^2",
+            };
+
+            for (String label : buttonLabels) {
+                JButton button = new JButton(label);
+                button.addActionListener(new ButtonClickListener());
+                buttonPanel.add(button);
+            }
+            frame.add(buttonPanel, BorderLayout.CENTER);
+            frame.setVisible(true);
+        }
+
+
+        private class ButtonClickListener implements ActionListener {
+            public void actionPerformed(ActionEvent event) {
+                JButton source = (JButton) event.getSource();
+                String buttonText = source.getText();
+                String textFieldText = textField.getText();
+                switch (buttonText) {
+                    case "=":
+                        if(JustUsedEqual){
+                            if(operatormethod==1){result+=justresult;}
+                            if(operatormethod==2){result-=justresult;}
+                            if(operatormethod==3){result*=justresult;}
+                            if(operatormethod==4){result/=justresult;}
+                            if (ISINTEGER(result) || result == 0.0) {
+                                int resultint = (int) result;
+                                textField.setText(String.valueOf(resultint));
+                            } else {
+                                textField.setText(String.valueOf(result));
+                            }
+                            JustUsedEqual = true;
+                        }
+                        else {
+                            double num2 = Double.parseDouble(textFieldText);
+
+                            switch (operator) {
+                                case "+":
+                                    result = num1 + num2;
+                                    justresult = num2;
+                                    operatormethod = 1;
+                                    break;
+                                case "-":
+                                    result = num1 - num2;
+                                    justresult = num2;
+                                    operatormethod = 2;
+                                    break;
+                                case "×":
+                                    result = num1 * num2;
+                                    justresult = num2;
+                                    operatormethod = 3;
+                                    break;
+                                case "÷":
+                                    if (num2 == 0) {
+                                        JOptionPane.showMessageDialog(frame, "0 cant be divisor");
+                                        return;
+                                    }
+                                    result = num1 / num2;
+                                    justresult = num2;
+                                    operatormethod = 4;
+                                    break;
+
+                                default:
+                                    JOptionPane.showMessageDialog(frame, "Invalid Option！");
+                                    return;
+
+                            }
+
+                            if (ISINTEGER(result) || result == 0.0) {
+                                int resultint = (int) result;
+                                textField.setText(String.valueOf(resultint));
+                            } else {
+                                textField.setText(String.valueOf(result));
+                            }
+                            JustUsedEqual = true;
+                        }
+
+                        break;
+
+                    case "+","-","×","÷", "AC":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText("");
+                        JustUsedEqual = false;
+                        break;
+
+                    case "sqrt":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(sqrt(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "log":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(log10(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "ln":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(log(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "^2":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(pow(num1,2)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "<]":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf((num1-num1%10)/10));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "sin":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(sin(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "cos":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(cos(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    case "tan":
+                        num1 = Double.parseDouble(textFieldText);
+                        operator = buttonText;
+                        textField.setText(String.valueOf(tan(num1)));
+                        JustUsedEqual=false;
+                        break;
+
+                    default:
+                        textField.setText(textFieldText + buttonText);
+                        break;
+                }
+                //System.out.println(JustUsedEqual);
+                //System.out.println(justresult);
+                //System.out.println(operatormethod);
+            }
+        }
+
+    }
+}
