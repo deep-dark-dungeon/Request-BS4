@@ -1,0 +1,199 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class WordBookProgram extends JFrame {
+    private ArrayList<String> wordBook;
+
+    private JLabel wordLabel;
+    private JTextField englishField;
+    private JTextField chineseField;
+    private JButton addButton;
+    private JButton deleteButton;
+    private JButton randomButton;
+
+    public WordBookProgram() {
+        wordBook = new ArrayList<>();
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        // 窗口属性
+        setTitle("单词本程序");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 400);
+        setLayout(new BorderLayout());
+        setResizable(false);
+        setLocationRelativeTo(null);
+        wordLabel = new JLabel("DEEP DARK FANTASY");
+        englishField = new JTextField();
+        chineseField = new JTextField();
+        addButton = new JButton("添加单词");
+        deleteButton = new JButton("删除单词");
+        randomButton = new JButton("随机取词(ctrl+ R)");
+
+        wordLabel.setFont(new Font("SimSun", Font.BOLD, 20));
+        wordLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        englishField.setFont(new Font("SimSun", Font.PLAIN, 16));
+        chineseField.setFont(new Font("SimSun", Font.PLAIN, 16));
+        addButton.setFont(new Font("SimSun", Font.PLAIN, 16));
+        deleteButton.setFont(new Font("SimSun", Font.PLAIN, 16));
+        randomButton.setFont(new Font("SimSun", Font.PLAIN, 16));
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+
+        inputPanel.add(new JLabel("英文单词:"));
+        inputPanel.add(englishField);
+        inputPanel.add(new JLabel("中文释义:"));
+        inputPanel.add(chineseField);
+
+        topPanel.add(wordLabel, BorderLayout.NORTH);
+        topPanel.add(inputPanel, BorderLayout.CENTER);
+
+        // 设置按钮的尺寸
+        Dimension buttonSize = new Dimension(addButton.getPreferredSize().width, 160);
+        addButton.setPreferredSize(buttonSize);
+        deleteButton.setPreferredSize(buttonSize);
+
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String englishWord = englishField.getText();
+                String chineseWord = chineseField.getText();
+                if (!englishWord.isEmpty() && !chineseWord.isEmpty()) {
+                    addWord(englishWord, chineseWord);
+                    JOptionPane.showMessageDialog(null, "单词已添加");
+                    englishField.setText("");
+                    chineseField.setText("");
+                } else {
+                    JOptionPane.showMessageDialog(null, "请输入英文和中文单词");
+                }
+            }
+        });
+
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String word = JOptionPane.showInputDialog("请输入要删除的单词");
+                if (word != null && !word.isEmpty()) {
+                    if (deleteWord(word)) {
+                        JOptionPane.showMessageDialog(null, "单词已删除");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "单词不存在");
+                    }
+                }
+            }
+        });
+
+        randomButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!wordBook.isEmpty()) {
+                    String randomWord = getRandomWord();
+                    JOptionPane.showMessageDialog(null, "随机单词: " + randomWord);
+                } else {
+                    JOptionPane.showMessageDialog(null, "单词本为空");
+                }
+            }
+        });
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 20);
+
+        ImageIcon imageIcon = new ImageIcon("D:\\9.jpg");
+        Image image = imageIcon.getImage().getScaledInstance(120, 160, Image.SCALE_SMOOTH);
+        JLabel imageLabel = new JLabel(new ImageIcon(image));
+
+        buttonPanel.add(addButton, gbc);
+        gbc.gridx = 1;
+        buttonPanel.add(imageLabel, gbc);
+        gbc.gridx = 2;
+        buttonPanel.add(deleteButton, gbc);
+
+        add(topPanel, BorderLayout.NORTH);
+        add(buttonPanel, BorderLayout.CENTER);
+        add(randomButton, BorderLayout.SOUTH);
+        InputMap inputMap = randomButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = randomButton.getActionMap();
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK), "randomWord");
+        actionMap.put("randomWord", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!wordBook.isEmpty()) {
+                    String randomWord = getRandomWord();
+                    JOptionPane.showMessageDialog(null, "随机单词: " + randomWord);
+                } else {
+                    JOptionPane.showMessageDialog(null, "单词本为空");
+                }
+            }
+        });
+        setVisible(true);
+    }
+
+    private void addWord(String englishWord, String chineseWord) {
+        String word = englishWord + " - " + chineseWord;
+        wordBook.add(word);
+        saveWordsToFile("D:\\wordbook.txt");
+    }
+    
+    private boolean deleteWord(String word) {
+        return wordBook.remove(word);
+    }
+
+    private String getRandomWord() {
+        Random random = new Random();
+        int index = random.nextInt(wordBook.size());
+        return wordBook.get(index);
+    }
+
+    private void loadWordsFromFile() {
+        try {
+            File file = new File("D:\\wordbook.txt");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    wordBook.add(line);
+                }
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveWordsToFile(String filename) {
+        try {
+            File file = new File(filename);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            for (String word : wordBook) {
+                writer.write(word);
+                writer.newLine();
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                WordBookProgram wordBookProgram = new WordBookProgram();
+                wordBookProgram.loadWordsFromFile();
+                wordBookProgram.setVisible(true);
+            }
+        });
+    }
+}
